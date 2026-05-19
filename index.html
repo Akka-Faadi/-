@@ -91,9 +91,12 @@
 </head>
 <body>
     <!-- Loading Screen -->
-    <div id="loading">
+    <div id="loading" style="cursor:pointer;">
         <div class="heart-loader"></div>
         <p class="rose-text text-xl text-red-400 mt-6">Planting roses for you...</p>
+        <p id="tap-hint" class="rose-text text-sm text-red-300 mt-6 pulse-glow" style="opacity:0; transition: opacity 1s ease;">
+            ✨ Tap anywhere to enter ✨
+        </p>
     </div>
 
     <!-- Background Music -->
@@ -870,28 +873,25 @@
         const bgMusic = document.getElementById('bg-music');
         bgMusic.volume = 0.6;
 
-        // Try immediate autoplay
-        bgMusic.play().catch(() => {
-            // Browser blocked silent autoplay — play on very first interaction
-            const unlockAudio = () => {
-                bgMusic.play().catch(() => {});
-                document.removeEventListener('click', unlockAudio);
-                document.removeEventListener('touchstart', unlockAudio);
-                document.removeEventListener('keydown', unlockAudio);
-                document.removeEventListener('scroll', unlockAudio);
-            };
-            document.addEventListener('click', unlockAudio);
-            document.addEventListener('touchstart', unlockAudio);
-            document.addEventListener('keydown', unlockAudio);
-            document.addEventListener('scroll', unlockAudio);
-        });
+        const loadingScreen = document.getElementById('loading');
+        const tapHint = document.getElementById('tap-hint');
 
-        setTimeout(() => {
-            document.getElementById('loading').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-            }, 1000);
-        }, 2000);
+        // Show "tap to enter" hint after 1.5s
+        setTimeout(() => { tapHint.style.opacity = '1'; }, 1500);
+
+        function enterSite() {
+            // This runs inside a real user gesture — audio will always play
+            bgMusic.play().catch(() => {});
+
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => { loadingScreen.style.display = 'none'; }, 1000);
+
+            loadingScreen.removeEventListener('click', enterSite);
+            loadingScreen.removeEventListener('touchstart', enterSite);
+        }
+
+        loadingScreen.addEventListener('click', enterSite);
+        loadingScreen.addEventListener('touchstart', enterSite);
 
         animate();
     </script>
